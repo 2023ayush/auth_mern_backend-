@@ -37,28 +37,28 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
 
 // patient login
 export const login = catchAsyncErrors(async (req, res, next) => {
-  const { email, password, role, confirmPassword } = req.body;
-  if (!email || !password || !role || !confirmPassword) {
-    return next(new ErrorHandler("Please provide all details", 400));
+  const { email, password, confirmPassword, role } = req.body;
+  if (!email || !password || !confirmPassword || !role) {
+    return next(new ErrorHandler("Please Fill Full Form!", 400));
   }
   if (password !== confirmPassword) {
     return next(
-      new ErrorHandler("Password And Confirm Password donot match", 400)
+      new ErrorHandler("Password & Confirm Password Do Not Match!", 400)
     );
   }
-
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
-    return next(new ErrorHandler("Invalid EMAIL OR PASSWORD", 400));
+    return next(new ErrorHandler("Invalid Email Or Password!", 400));
   }
+
   const isPasswordMatch = await user.comparePassword(password);
   if (!isPasswordMatch) {
-    return next(new ErrorHandler("Invalid EMAIL OR PASSWORD", 400));
+    return next(new ErrorHandler("Invalid Email Or Password!", 400));
   }
   if (role !== user.role) {
-    return next(new ErrorHandler("User with this role not found", 400));
+    return next(new ErrorHandler(`User Not Found With This Role!`, 400));
   }
-  generateToken(user, "User LogedIn Successfully", 200, res);
+  generateToken(user, "Login Successfully!", 201, res);
 });
 
 // generate new admin
@@ -79,7 +79,12 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
   }
   const isRegistered = await User.findOne({ email });
   if (isRegistered) {
-    return next(new ErrorHandler("Admin with this email already exixts", 400));
+    return next(
+      new ErrorHandler(
+        `${isRegistered.role} with this email already exixts`,
+        400
+      )
+    );
   }
   const admin = await User.create({
     firstName,
